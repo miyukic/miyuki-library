@@ -9,6 +9,10 @@
 *.so.*
 *.dll
 *.dylib
+*.obj
+
+#vimfile
+*.swp
 
 # Qt-es
 object_script.*.Release
