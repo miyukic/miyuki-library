@@ -1,5 +1,7 @@
 #include "StopWatch.hpp"
 #include <Windows.h>
+#include <profileapi.h>
+
 
 namespace myk {
 namespace lib {
