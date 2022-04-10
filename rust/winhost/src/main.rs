@@ -2,9 +2,13 @@ use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use once_cell::sync::Lazy;
+use once_cell::sync::OnceCell;
 
 //const RESOLVECONF_PATH: &str  = "etc/resolve.conf";
-const RESOLVECONF_PATH: &str  = "./test.txt";
+//const RESOLVECONF_PATH: &str  = "./test.txt";
+static RESOLVECONF_PATH: OnceCell<String> = OnceCell::new();
+
 
 fn main() {
     let path = Path::new(&RESOLVECONF_PATH);
