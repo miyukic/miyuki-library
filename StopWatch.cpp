@@ -4,6 +4,7 @@
 
 
 namespace myk {
+
 namespace lib {
     namespace util {
         StopWatch::StopWatch() {
