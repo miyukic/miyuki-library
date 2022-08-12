@@ -122,6 +122,7 @@ namespace tuilib {
                 ) noexcept(false) {
             //std::cout << _frameBuffer.size() << std::endl;
             _frameBuffer.at(((row - 1) * _width) + cul - 1) = charactor;
+            _diffs.push_back(row, cul, charactor);
         }
 
         //任意の位置(row, cul)の文字を返す(読み取り専用)
@@ -152,6 +153,7 @@ namespace tuilib {
             } else {
                 diffOverWrite();
             }
+            _diffs.clear();
         }
     };
 }

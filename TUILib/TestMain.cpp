@@ -16,6 +16,7 @@ void onTimer() {
     static int counter = 0;
     try {
         scrn.setCharactor(std::to_string(counter), 3, 3);
+        scrn.reflectScreen();
     } catch (const std::exception& ex) {
         std::cerr << ex.what() << std::endl;
     }
