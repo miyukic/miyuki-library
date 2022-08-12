@@ -73,7 +73,7 @@ namespace tuilib {
                 }
                 std::cout << std::endl;
             }
-            this->_preFrameBuffer = std::move(_frameBuffer);
+            this->_preFrameBuffer = _frameBuffer;
         }
 
         DiffPositions& getDiffPositions() {
@@ -120,6 +120,7 @@ namespace tuilib {
         void setCharactor(
                 std::string charactor, uint16_t row, uint16_t cul
                 ) noexcept(false) {
+            //std::cout << _frameBuffer.size() << std::endl;
             _frameBuffer.at(((row - 1) * _width) + cul - 1) = charactor;
         }
 
