@@ -63,7 +63,7 @@ namespace tuilib {
         DiffPositions _diffs;
     private:
         void refleshScreen() {
-            //std::system("cls");
+            std::system("cls");
             auto h = _hight;
             auto w = _width;
             for (decltype(h) i = 0; i < h; ++i) {
@@ -81,12 +81,16 @@ namespace tuilib {
         }
 
         //位置(row,cul)を指定して任意文字(charactor)で書き換える。
-        void putc(uint16_t row, uint16_t cul, std::string& charactor) {
-            std::cout << "row"  << row << std::endl;
-            std::cout << "cul"  << cul << std::endl;
-            std::cout << "cul"  + charactor << std::endl;
+        void putc(uint16_t row, uint16_t cul, const std::string& charactor) {
+            //std::cout << "row       "  << row << std::endl;
+            //std::cout << "cul       "  << cul << std::endl;
+            //std::cout << "charactor "  + charactor << std::endl;
+            std::cout << "\033[" << row << "d" << std::flush;
+            std::cout << "\033[" << cul << "G" << std::flush;
+            std::cout << charactor << std::flush;
         }
 
+        //差分を書き換える。
         void diffOverWrite() {
             while(true) {
                 std::optional<std::tuple<uint16_t, uint16_t, std::string>> maybe 

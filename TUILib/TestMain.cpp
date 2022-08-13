@@ -10,7 +10,7 @@ int32_t interval = 1000;
 tuilib::Screen scrn;
 uint16_t hight = 6;
 uint16_t width = 18;
-const std::string BLOCK = "■";
+const std::string BLOCK = "━";
 
 void onTimer() {
     static int counter = 0;
@@ -26,8 +26,8 @@ void onTimer() {
 int main() {
     using namespace tuilib;
     //std::system("cls");
-    scrn.createFrameBuffer(6, 6);
-    scrn.clearBuffer("■");
+    scrn.createFrameBuffer(hight, width);
+    scrn.clearBuffer(BLOCK);
     //scrn.setCharactor("ほ", 3, 3);
     scrn.reflectScreen();
     while (true) {
