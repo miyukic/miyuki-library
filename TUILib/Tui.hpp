@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+//#include <errhandlingapi.h>
 #include <iostream>
 #include <cstdint>
 #include <stdint.h>
@@ -10,6 +11,13 @@
 #include <optional>
 #include <algorithm>
 #include <cstdlib>
+
+#include "DiffPositions.hpp"
+
+#ifdef _WIN32
+#   include <Windows.h>
+#   include <io.h>
+#endif
 
 #ifdef MYKLIBL_EXPORTS
 #   ifdef _WINDLL
@@ -30,29 +38,6 @@
 
 
 namespace tuilib {
-    class MYKLIB_API DiffPositions {
-        std::vector<std::tuple<uint16_t, uint16_t, std::string>> _data;
-    public:
-        void clear() {
-            _data.clear();
-        }
-
-        void push_back(uint16_t row, uint16_t cul, std::string charactor) {
-            _data.push_back({row, cul, charactor});
-        }
-
-        // 最後の変更点をpop
-        std::optional<std::tuple<uint16_t, uint16_t, std::string>> pop() {
-            if (_data.empty()) {
-                return std::nullopt;
-            } else {
-                std::optional<std::tuple<uint16_t, uint16_t, std::string>> data
-                    = _data.back();
-                _data.pop_back();
-                return data;
-            }
-        }
-    };
 
     class MYKLIB_API Screen {
         bool _doReflesh = true; //画面再描画フラグ
@@ -61,9 +46,12 @@ namespace tuilib {
         std::vector<std::string> _frameBuffer;
         std::vector<std::string> _preFrameBuffer;
         DiffPositions _diffs;
+    public:
+        bool cursor = true;
     private:
         void refleshScreen() {
-            std::system("cls");
+            std::cout << "\033[?1049h" << "\033[1d" << "\033[1G" << std::flush;
+            //std::system("cls");
             auto h = _hight;
             auto w = _width;
             for (decltype(h) i = 0; i < h; ++i) {
@@ -81,28 +69,24 @@ namespace tuilib {
         }
 
         //位置(row,cul)を指定して任意文字(charactor)で書き換える。
-        void putc(uint16_t row, uint16_t cul, const std::string& charactor) {
-            //std::cout << "row       "  << row << std::endl;
-            //std::cout << "cul       "  << cul << std::endl;
-            //std::cout << "charactor "  + charactor << std::endl;
-            std::cout << "\033[" << row << "d" << std::flush;
-            std::cout << "\033[" << cul << "G" << std::flush;
-            std::cout << charactor << std::flush;
+        void putc(const DiffProperty& dp) {
+            std::cout << "\033[" << dp.row << "d" << std::flush;
+            std::cout << "\033[" << dp.cul << "G" << std::flush;
+            std::cout << dp.charactor << std::flush;
         }
 
         //差分を書き換える。
         void diffOverWrite() {
             while(true) {
-                std::optional<std::tuple<uint16_t, uint16_t, std::string>> maybe 
+                std::optional<DiffProperty> maybe 
                     = getDiffPositions().pop();
                 if (maybe) {
-                    auto [row, cul, charactor] = maybe.value();
-                    putc(row, cul, charactor);
+                    auto diffproperty{maybe.value()};
+                    putc(diffproperty);
                 } else {
                     break;
                 }
             }
-            
         }
 
     public:
@@ -118,16 +102,29 @@ namespace tuilib {
             _width = width;
             _frameBuffer.resize(hight * width);
             _doReflesh = true;
+#ifdef _WIN32
+            //if (_isatty(1)) {
+            //    if (SetConsoleMode(
+            //                GetStdHandle(STD_OUTPUT_HANDLE),
+            //                ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
+            //        //std::cerr << GetLastError() << std::endl;
+            //    }
+            //}
+#endif
         }
 
-        //任意の位置(row, cul)に任意の字(charactor)を配置
+        //任意の位置(row, cul)に任意の字(charactor)を配置, textattrに文字色等の設定を配列(vector)で渡す
         void setCharactor(
-                std::string charactor, uint16_t row, uint16_t cul
+                uint16_t row, uint16_t cul, const std::string& charactor, const std::vector<TextAttribute>& txtattr = {} 
                 ) noexcept(false) {
             //std::cout << _frameBuffer.size() << std::endl;
             _frameBuffer.at(((row - 1) * _width) + cul - 1) = charactor;
-            _diffs.push_back(row, cul, charactor);
+            _diffs.pushBack(row, cul, charactor, txtattr);
         }
+
+        struct Propaty {
+
+        };
 
         //任意の位置(row, cul)の文字を返す(読み取り専用)
         const std::string& refFrameBuffer(
@@ -151,6 +148,11 @@ namespace tuilib {
 
         //フレームバッファの内容をコンソールに反映
         void reflectScreen() {
+            if (cursor) {
+                std::cout << "\033[?25h" << std::flush;
+            } else {
+                std::cout << "\033[?25l" << std::flush;
+            }
             if (_doReflesh) {
                 refleshScreen();
                 _doReflesh = false;
